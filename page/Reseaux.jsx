@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // URL de ton backend Flask
-const API_URL = 'http://localhost:5000/translate';
+const API_URL = 'https://skool-backend-h3kb.onrender.com/translate';
 
 function TranslationApp() {
   const [input, setInput] = useState('');
