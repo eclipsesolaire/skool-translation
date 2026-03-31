@@ -9,13 +9,9 @@ import sys
 app = Flask(__name__)
 
 # Configuration CORS pour permettre les requêtes du frontend
-CORS(app, origins=[
-    "https://skool-frontend.onrender.com",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:5000"
-])
 
+CORS(app, origins="*")
+ 
 # ===========================================================
 # 1. CHARGEMENT DU MODÈLE (.pkl)
 # ===========================================================
