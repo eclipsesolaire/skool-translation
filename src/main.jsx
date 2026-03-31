@@ -1,7 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
-import Navbar from '../nav/navbar'
+import Navbar from '../nav/Navbar'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
 
