@@ -2,7 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from '../nav/Navbar';
 import Accueil from '../page/Accueil'
-import Visualisateur from '../page/visualisateur'
+import Visualisateur from '../page/Visualisateur'  
 import Code from '../page/Code'
 import Reseaux from '../page/Reseaux'
 
