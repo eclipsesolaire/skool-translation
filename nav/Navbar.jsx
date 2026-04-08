@@ -31,11 +31,11 @@ export default function Navbar() {
   return (
     <>
       <header className="fixed left-0 top-0 w-full shadow-lg h-14 flex items-center px-3 bg-white z-50">
-        <h1 className="font-black text-indigo-400 text-lg sm:text-xl w-[200px] sm:w-[250px] ml-[1%] truncate">
+        <h1 className="text-shadow-lg font-black  text-indigo-400 text-lg sm:text-xl w-[200px] sm:w-[250px] ml-[1%] truncate">
           Sorting Visualizer
         </h1>
 
-        {/* Menu burger mobile */}
+
         <button 
           onClick={() => setMobileMenu(!mobileMenu)}
           className="md:hidden ml-4 p-2 hover:bg-purple-100 rounded-lg"
@@ -44,7 +44,7 @@ export default function Navbar() {
         </button>
 
         {/* Nav desktop */}
-        <nav className={`md:flex ${mobileMenu ? 'flex' : 'hidden'} md:gap-[12%] md:w-[50%] flex-col md:flex-row absolute md:static top-14  md:left-auto w-full md:w-auto bg-white  p-4 md:p-0 shadow-lg md:shadow-none gap-2 md:gap-[5%] ml-[3%]`}>
+        <nav className={`md:flex ${mobileMenu ? 'flex -ml-[1rem] hover:bg-transparent' : 'hidden'} md:gap-[12%] md:w-[50%] flex-col md:flex-row absolute md:static top-14  md:left-auto w-full md:w-auto bg-white  p-4 md:p-0 shadow-lg md:shadow-none gap-2 md:gap-[5%] ml-[3%]`}>
           <Link 
             to="/" 
             className="hover:bg-purple-100/60 px-3 py-2 rounded-lg hover:text-indigo-600 w-full md:w-auto text-center"
@@ -77,13 +77,12 @@ export default function Navbar() {
         
         <div 
           onClick={openSearch}
-          className="flex gap-2 items-center px-3 py-3 hover:bg-purple-100 rounded-lg hover:text-indigo-600  ml-auto mr-[50px]">
+          className="flex gap-3 items-center px-3 py-3 hover:bg-purple-100 rounded-lg hover:text-indigo-600  ml-auto mr-[50px]">
           <span className="fas fa-magnifying-glass text-gray-600 text-xl"></span>
           <span className="hidden sm:inline">Recherche</span>
         </div>
       </header>
 
-      {/* Menu mobile overlay */}
       {mobileMenu && (
         <div 
           className="md:hidden fixed inset-0 bg-black/20 z-40"
@@ -91,7 +90,6 @@ export default function Navbar() {
         />
       )}
 
-      {/* Modal recherche (inchangé) */}
       {open && (
         <div
           onClick={closeSearch}
@@ -101,8 +99,8 @@ export default function Navbar() {
             onClick={(e) => e.stopPropagation()}
             className="relative w-[90%] md:w-[40%] bg-white rounded-xl shadow-xl p-6"
           >
-            <span className="fas fa-magnifying-glass text-gray-600 text-xl absolute left-4 top-[34px]"></span>
-            <input
+            <span className="fas fa-magnifying-glass text-gray-600 text-xl absolute left-9 top-[34px]"></span>
+            <input  
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="Rechercher un algorithme..."

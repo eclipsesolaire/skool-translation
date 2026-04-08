@@ -8,6 +8,7 @@ function TranslationApp() {
   const [output, setOutput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleTranslate = async () => {
     if (!input.trim()) {
@@ -20,7 +21,6 @@ function TranslationApp() {
     setOutput('');
 
     try {
-      // Appel à l'API (On envoie seulement le texte maintenant)
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -37,7 +37,6 @@ function TranslationApp() {
 
       const data = await response.json();
       
-      // On accepte 'translation' ou 'result' selon ce que renvoie ton Python
       setOutput(data.translation || data.result || "Aucune traduction reçue");
       
     } catch (err) {
@@ -48,120 +47,156 @@ function TranslationApp() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleTranslate();
-    }
-  };
+
 
   const clearAll = () => {
     setInput('');
     setOutput('');
     setError('');
+    setCopied(false);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 4000);
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Traducteur Français → Anglais</h1>
-        <p style={styles.subtitle}>Intelligence Artificielle (RNN + BPE)</p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 font-sans">
 
-        <div style={styles.inputSection}>
-          <label style={styles.label}>Phrase en français :</label>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Exemple: je suis étudiant"
-            rows={4}
-            style={styles.textarea}
-            disabled={loading}
-          />
-        </div>
+        {/* Carte principale */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-100 overflow-hidden p-8">
+            <div className="max-w-3xl mx-auto">
+              
+              <div className="text-center mb-10">
+                
+                <div className="inline-block p-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg mb-4">
+                </div>
 
-        <div style={styles.buttonGroup}>
-          <button
-            onClick={handleTranslate}
-            disabled={loading}
-            style={{
-              ...styles.button,
-              ...styles.primaryButton,
-              opacity: loading ? 0.7 : 1
-            }}
-          >
-            {loading ? "Traduction..." : "🔤 Traduire"}
-          </button>
-          
-          <button
-            onClick={clearAll}
-            disabled={loading}
-            style={styles.secondaryButton}
-          >
-            🗑️ Effacer
-          </button>
-        </div>
-
-        {error && (
-          <div style={styles.errorBox}>
-            ⚠️ {error}
-          </div>
-        )}
-
-        <div style={styles.outputSection}>
-          <label style={styles.label}>Résultat :</label>
-          <div style={styles.outputBox}>
-            {loading ? (
-              <div style={styles.loadingAnimation}>
-                <div style={styles.spinner}></div>
-                <span>Le réseau de neurones réfléchit...</span>
+                  <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                  Traducteur IA
+                  </h1>
+                  <p className="text-gray-600 text-lg">
+                    Français → Anglais traduction réseaux de neurone 
+                    </p>
               </div>
-            ) : output ? (
-              <div style={styles.translationResult}>
-                {output}
-                <button
-                  onClick={() => navigator.clipboard.writeText(output)}
-                  style={styles.copyButton}
-                >
-                  📋
-                </button>
+
+            {/* Zone d'entrée */}
+            <div className="mb-6">
+              <label className="block mb-2 font-semibold text-indigo-700 text-sm uppercase tracking-wide">
+                Texte à traduire en francais 
+              </label>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Exemple: je suis étudiant en informatique"
+                rows={4}
+                className="w-full p-4 border-2 border-indigo-100 rounded-xl text-base outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 transition-all bg-gray-50 resize-none"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <button
+                onClick={handleTranslate}
+                disabled={loading}
+                className={`flex-1 py-3 rounded-xl font-bold text-white transition-all transform ${
+                  loading 
+                    ? 'bg-indigo-400 opacity-70 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
+                } transition-all duration-200`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Traduction en cours...</span>
+                  </div>
+                ) : (
+                  <span>Traduire</span>
+                )}
+              </button>
+              
+              <button
+                onClick={clearAll}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105 transition-all duration-200 border border-gray-200"
+              >
+                Effacer
+              </button>
+            </div>
+
+            {/* Message d'erreur */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg animate-shake">
+                <div className="flex items-center gap-2 text-red-700">
+                  <span className="text-lg">⚠️</span>
+                  <span className="font-medium">{error}</span>
+                </div>
               </div>
-            ) : (
-              <div style={styles.placeholder}>La traduction apparaîtra ici</div>
             )}
+
+            {/* Résultat */}
+            <div>
+              <label className="block mb-2 font-semibold text-indigo-700 text-sm uppercase tracking-wide">
+                🎯 Traduction
+              </label>
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-100 p-6 min-h-[120px]">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center gap-3 py-4">
+                    <div className="w-10 h-10 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <span className="text-indigo-600 font-medium">Le réseau de neurones analyse...</span>
+                  </div>
+                ) : output ? (
+                  <div className="space-y-4">
+                    <div className="text-lg md:text-xl text-gray-800 leading-relaxed font-medium">
+                      {output}
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-md hover:shadow-lg"
+                      >
+                        {copied ? (
+                          <span> text Copié</span>
+                        ) : (
+                            <span>Copier</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-400">La traduction apparaîtra ici</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Footer avec stats */}
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center gap-4 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-full shadow-sm border border-indigo-100">
+            <div className="flex items-center gap-2 text-indigo-600">
+              <span className="text-sm">🧠</span>
+              <span className="text-xs font-medium">RNN Encodeur-Décodeur</span>
+            </div>
+            <div className="w-px h-4 bg-indigo-200"></div>
+            <div className="flex items-center gap-2 text-indigo-600">
+              <span className="text-sm">🎯</span>
+              <span className="text-xs font-medium">Attention Mechanism</span>
+            </div>
+            <div className="w-px h-4 bg-indigo-200"></div>
+            <div className="flex items-center gap-2 text-indigo-600">
+              <span className="text-sm">⚡</span>
+              <span className="text-xs font-medium">BPE Tokenizer</span>
+            </div>
+          </div>
+        </div>
     </div>
   );
-}
-
-// Styles
-const styles = {
-  container: { minHeight: '100vh', padding: '40px 20px', backgroundColor: '#f5f7fb', fontFamily: 'sans-serif' },
-  card: { maxWidth: '700px', margin: '0 auto', backgroundColor: 'white', borderRadius: '15px', padding: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' },
-  title: { margin: '0 0 10px 0', color: '#1a202c', textAlign: 'center' },
-  subtitle: { textAlign: 'center', color: '#718096', marginBottom: '30px' },
-  label: { display: 'block', marginBottom: '8px', fontWeight: '600', color: '#4a5568' },
-  textarea: { width: '100%', padding: '15px', border: '1px solid #e2e8f0', borderRadius: '10px', fontSize: '16px', outline: 'none', boxSizing: 'border-box' },
-  buttonGroup: { display: 'flex', gap: '10px', margin: '20px 0' },
-  button: { padding: '12px', border: 'none', borderRadius: '8px', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold', flex: 1 },
-  primaryButton: { backgroundColor: '#4c51bf', color: 'white' },
-  secondaryButton: { backgroundColor: '#edf2f7', color: '#4a5568' },
-  outputBox: { border: '1px solid #e2e8f0', borderRadius: '10px', padding: '15px', minHeight: '80px', backgroundColor: '#f8fafc' },
-  translationResult: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', color: '#2d3748' },
-  copyButton: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' },
-  placeholder: { color: '#a0aec0', textAlign: 'center', paddingTop: '20px' },
-  errorBox: { backgroundColor: '#fff5f5', color: '#c53030', padding: '10px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px' },
-  loadingAnimation: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
-  spinner: { width: '18px', height: '18px', border: '2px solid #cbd5e0', borderTop: '2px solid #4c51bf', borderRadius: '50%', animation: 'spin 1s linear infinite' },
-};
-
-// Injection du CSS pour l'animation
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
-  document.head.appendChild(styleSheet);
 }
 
 export default TranslationApp;

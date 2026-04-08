@@ -199,13 +199,13 @@ export default function Visualisateur() {
 
     return (
         <>
-            <div className="relative w-full">
-                <div className="border-[1px] p-6 bg-white/30 text-gray-600/80 w-[85%] ml-[6%] shadow-lg rounded-lg h-[800px] mt-[20px]">
-                    <ul className="flex gap-2 text-[0.8rem] md:text-[1rem] font-semibold">
+            <div className="relative w-full ">
+                <div className="p-6 bg-white/30 text-gray-600/80 shadow-lg rounded-lg mt-[20px] w-[96%] ml-[2%] sm:w-[90%] 
+                sm:ml-[5%] md:w-[85%] md:ml-[6%] lg:w-[80%] lg:ml-[10%] xl:w-[85%] xl:ml-[6%]">
+                    <ul className="flex flex-wrap gap-2 text-[0.7rem] md:text-[1rem] font-semibold">
                         <h4 className="hover:text-indigo-500 cursor-pointer">
-  <Link to="/" onClick={() => setMobileMenu(false)}>Accueil</Link>
-</h4>
-
+                            <Link to="/" onClick={() => setMobileMenu(false)}>Accueil</Link>
+                        </h4>
                         <span className="font-bold">→</span>
                         <h4 className="hover:text-indigo-500 cursor-pointer">Graphique</h4>
                         <span className="font-bold">→</span>
@@ -220,35 +220,33 @@ export default function Visualisateur() {
                         <h4 className="ml-4">Visulisateur d'algorithme</h4>
                     </ul>
 
-                    <h1 className="text-[1.3rem] md:text-[2rem] lg:text-[2.5rem] text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-bold mt-4 mb-6 text-center ">
+                    <h1 className="text-[1.3rem] md:text-[2rem] lg:text-[2.5rem] text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 font-bold mt-4 mb-6 text-center">
                         Algorithme visualisation
                     </h1>
-                    <h4 className="ml-[20%] mt-3">
+                    <h4 className="text-center mt-3 text-sm ">
                         Projet interactif de visualisation d’algorithmes qui permet d’afficher
                         étape par étape le fonctionnement de méthodes de tri, de
                         recherche ou de parcours de graphes à l’aide d’animations et de barres colorées.
                     </h4>
 
                     <div>
-                        <div className="flex p-2 mt-8 px-4 gap-[2%] mt-4 max-w-[95%] mx-auto ">
-                            <div className="flex flex-col w-[25%]">
+                        <div className="flex flex-col md:flex-row p-2 mt-8 px-4 gap-[2%] mt-4 max-w-[95%] mx-auto">
+                            <div className="flex flex-col w-full md:w-[25%] mb-4 md:mb-0">
                                 <div className="flex flex-col gap-2 w-[100%] border-2 rounded-lg bg-blue-100/90 p-2 h-[140px]">
                                     <p className="pl-2 pt-2 px-4 text-blue-800/60 font-medium text-[0.8rem]">
                                         Version visualisation
                                     </p>
                                     <button
                                         onClick={graphiqueChoise}
-                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${
-                                            optionVisualisation ? 'bg-blue-600 text-white' : ''
-                                        }`}
+                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${optionVisualisation ? 'bg-blue-600 text-white' : ''
+                                            }`}
                                     >
                                         Graphique visualisation
                                     </button>
                                     <button
                                         onClick={graphiqueRandom}
-                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${
-                                            randomGraph ? 'bg-blue-600 text-white' : ''
-                                        }`}
+                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${randomGraph ? 'bg-blue-600 text-white' : ''
+                                            }`}
                                     >
                                         🎲 Random Graphique
                                     </button>
@@ -256,39 +254,25 @@ export default function Visualisateur() {
 
                                 {optionVisualisation && (
                                     <div className="border-2 mt-[30px] pt-[15px] h-[180px] rounded-lg">
-                                        <ul className="flex gap-4 text-white font-bold px-2 ">
-                                            <button
-                                                onClick={handleReset}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
+                                        <ul className="flex gap-4 text-white font-bold px-2">
+                                            <button onClick={handleReset}
+                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
                                                 <i className="fi fi-ss-rewind mt-[2px]"></i>Reset
                                             </button>
-
-                                            <button
-                                                onClick={handlePlayPause}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
-                                                <i
-                                                    className={`fi ${
-                                                        play ? 'fi-sr-pause' : 'fi-sr-play-circle'
-                                                    } mt-[2px]`}
-                                                ></i>
+                                            <button onClick={handlePlayPause} className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
+                                                <i className={`fi ${play ? 'fi-sr-pause' : 'fi-sr-play-circle'} mt-[2px]`}></i>
                                                 {play ? 'Pause' : 'Play'}
                                             </button>
-
-                                            <button
-                                                onClick={handleEnd}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
+                                            <button onClick={handleEnd}
+                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
                                                 End<i className="fi fi-ss-forward mt-[2px]"></i>
                                             </button>
                                         </ul>
-
                                         <p className="mt-4 text-[0.8rem] ml-3">Gérer la vittesse du graphique</p>
                                         <p className="text-[0.8rem] ml-3">Speed : {vitesse}</p>
                                         <input
                                             onChange={(e) => setVitesse(Number(e.target.value))}
-                                            className="ml-4 mt-2"
+                                            className="ml-4 mt-2 w-[90%]"
                                             value={vitesse}
                                             type="range"
                                             min="1"
@@ -299,40 +283,28 @@ export default function Visualisateur() {
 
                                 {randomGraph && (
                                     <div className="border-2 mt-[30px] pt-[15px] h-[180px] rounded-lg">
-                                        <ul className="flex gap-4 text-white font-bold px-2 ">
+                                        <ul className="flex gap-4 text-white font-bold px-2">
                                             <button
                                                 onClick={handleReset}
                                                 className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
                                             >
                                                 <i className="fi fi-ss-rewind mt-[2px]"></i>Reset
                                             </button>
-
-                                            <button
-                                                onClick={handlePlayPause}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
-                                                <i
-                                                    className={`fi ${
-                                                        play ? 'fi-sr-pause' : 'fi-sr-play-circle'
-                                                    } mt-[2px]`}
-                                                ></i>
+                                            <button onClick={handlePlayPause}
+                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
+                                                <i className={`fi ${play ? 'fi-sr-pause' : 'fi-sr-play-circle' } mt-[2px]`}></i>
                                                 {play ? 'Pause' : 'Play'}
                                             </button>
-
-                                            <button
-                                                onClick={handleEnd}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
+                                            <button onClick={handleEnd} className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
                                                 End<i className="fi fi-ss-forward mt-[2px]"></i>
                                             </button>
                                         </ul>
-
                                         <p className="mt-4 text-[0.8rem] ml-3">Gérer la vittesse du graphique</p>
                                         <p className="text-[0.8rem] ml-3">Speed : {vitesse}</p>
-                                        <div className="flex flex-col w-full flex item-center">
+                                        <div className="flex flex-col w-full">
                                             <input
                                                 onChange={(e) => setVitesse(Number(e.target.value))}
-                                                className="ml-5 mr-6 mt-2"
+                                                className="ml-5 mr-6 mt-2 w-[90%]"
                                                 value={vitesse}
                                                 type="range"
                                                 min="1"
@@ -349,9 +321,9 @@ export default function Visualisateur() {
                                 )}
                             </div>
 
-                            <div className="flex flex-col flex-auto border-2 rounded-lg p-2 h-[400px]">
+                            <div className="flex flex-col flex-auto border-2 rounded-lg p-2 h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
                                 {/* Légende commune aux deux modes */}
-                                <div className="flex justify-center gap-6 mt-2 mb-2">
+                                <div className="flex flex-wrap justify-center gap-4 mt-2 mb-2">
                                     <div className="flex items-center gap-2">
                                         <div className="w-4 h-4 bg-blue-500 rounded"></div>
                                         <span className="text-sm">Non trié</span>
@@ -385,26 +357,17 @@ export default function Visualisateur() {
                 </div>
             </div>
 
+
             {/* Background noir semi-transparent pour Login */}
-            <div
-                className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${
-                    LoginOpen
-                        ? 'opacity-50 pointer-events-auto'
-                        : 'opacity-0 pointer-events-none'
-                }`}
-                onClick={closeLogin}
-            ></div>
+            <div className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${LoginOpen
+                    ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={closeLogin}>
+                </div>
 
             {/* Card de login */}
-            <div
-                className={`fixed z-50 rounded-[1rem] w-[30%] h-[35rem] border-[1px] border-white/30 text-white 
-                top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md ${
-                    LoginOpen
-                        ? 'right-[1rem] opacity-100 pointer-events-auto'
-                        : 'right-[-40%] opacity-0 pointer-events-none'
-                }`}
-                style={{ background: 'rgba(38, 48, 127, 0.9)' }}
-            >
+            <div className={`fixed z-50 rounded-[1rem] border-[1px] border-white/30 text-white top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md
+                w-[90%] sm:w-[80%] md:w-[70%] lg:w-[50%] xl:w-[35%] 2xl:w-[30%] h-[80vh] overflow-y-auto 
+                ${ LoginOpen ? 'right-[1rem] opacity-100 pointer-events-auto' : 'right-[-40%] opacity-0 pointer-events-none'}`}
+                style={{ background: 'rgba(38, 48, 127, 0.9)' }}>
                 <div className="flex justify-between mx-5 mt-3">
                     <h3 className="font-bold text-[1.5rem]">Login</h3>
                     <h3 className="text-[2rem] opacity-80 cursor-pointer -mt-2" onClick={closeLogin}>
@@ -419,41 +382,31 @@ export default function Visualisateur() {
 
                 <div className="mt-8 flex-1 px-5 space-y-4">
                     <div className="space-y-2">
-                        <h4 className="opacity-80 text-[0.9rem] ">* Identifiant</h4>
+                        <h4 className="opacity-80 text-[0.9rem]">* Identifiant</h4>
                         <input
-                            placeholder="Mettez votre identifiant"
-                            style={{ background: '#514c4c80' }}
-                            type="text"
-                            className="rounded-[6px] border border-white/60 py-[7px] w-full p-2 text-[0.9rem] outline-none"
-                        />
+                            placeholder="Mettez votre identifiant" style={{ background: '#514c4c80' }}
+                            type="text" className="rounded-[6px] border border-white/60 py-[7px] w-full p-2 text-[0.9rem] outline-none"/>
                     </div>
 
                     <div className="space-y-2">
                         <h4 className="opacity-80 text-[0.9rem]">* Mot de passe</h4>
                         <input
-                            placeholder="Mettez votre mot de passe"
-                            style={{ background: '#514c4c80' }}
-                            type="password"
-                            className="rounded-[6px] border border-white/60 py-[7px] w-full p-2 text-[0.9rem] outline-none"
-                        />
+                            placeholder="Mettez votre mot de passe" style={{ background: '#514c4c80' }}
+                            type="password" className="rounded-[6px] border border-white/60 py-[7px] w-full p-2 text-[0.9rem] outline-none"/>
                     </div>
                 </div>
 
-                <div
-                    style={{ background: '#6372ff' }}
-                    className="rounded-b-[1rem] p-6 flex flex-col items-center space-y-4"
-                >
+                <div style={{ background: '#6372ff' }}
+                    className="rounded-b-[1rem] p-6 flex flex-col items-center space-y-4">
                     <hr className="border-white/20 w-full" />
                     <div className="flex gap-6">
                         <button
-                            className="border border-white font-bold hover:bg-white hover:text-black transition-colors rounded-lg w-[5rem] py-1"
-                        >
+                            className="border border-white font-bold hover:bg-white hover:text-black transition-colors rounded-lg w-[5rem] py-1">
                             Login
                         </button>
                         <button
                             onClick={openSignupCloseLogin}
-                            className="font-bold hover:opacity-70 px-6 py-1 bg-white/10 rounded-lg border border-white/30"
-                        >
+                            className="font-bold hover:opacity-70 px-6 py-1 bg-white/10 rounded-lg border border-white/30">
                             Sign up
                         </button>
                     </div>
@@ -462,24 +415,16 @@ export default function Visualisateur() {
 
             {/* Background pour Sign up */}
             <div
-                className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${
-                    SignupOpen
-                        ? 'opacity-50 pointer-events-auto'
-                        : 'opacity-0 pointer-events-none'
-                }`}
-                onClick={closeSignup}
-            ></div>
+                className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${SignupOpen
+                        ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                onClick={closeSignup}></div>
 
             {/* Card de Sign up */}
             <div
-                className={`fixed z-50 rounded-[1rem] w-[30%] h-[35rem] border-[1px] border-white/30 text-white 
-                top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md ${
-                    SignupOpen
-                        ? 'right-[1rem] opacity-100 pointer-events-auto'
-                        : 'right-[-40%] opacity-0 pointer-events-none'
-                }`}
-                style={{ background: 'rgba(38, 48, 127, 0.9)' }}
-            >
+                className={`fixed z-50 rounded-[1rem] border-[1px] border-white/30 text-white top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md
+                 w-[90%] sm:w-[80%] md:w-[70%] lg:w-[50%] xl:w-[35%] 2xl:w-[30%] h-[80vh] overflow-y-auto
+                 ${SignupOpen ? 'right-[1rem] opacity-100 pointer-events-auto' : 'right-[-40%] opacity-0 pointer-events-none'
+                    }`} style={{ background: 'rgba(38, 48, 127, 0.9)' }}>
                 <div className="flex justify-between mx-5 mt-3">
                     <h3 className="font-bold text-[1.5rem]">Sign up</h3>
                     <h3 className="text-[2rem] opacity-80 cursor-pointer -mt-2" onClick={closeSignup}>
@@ -493,7 +438,7 @@ export default function Visualisateur() {
 
                 <div className="mt-8 flex-1 px-5 space-y-4">
                     <div className="space-y-2">
-                        <h4 className="opacity-80 text-[0.9rem] ">* Identifiant</h4>
+                        <h4 className="opacity-80 text-[0.9rem]">* Identifiant</h4>
                         <input
                             placeholder="Cree votre identifiant"
                             style={{ background: '#514c4c80' }}
