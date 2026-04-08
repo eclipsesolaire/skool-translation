@@ -104,7 +104,7 @@ function TranslationApp() {
                 disabled={loading}
                 className={`flex-1 py-3 rounded-xl font-bold text-white transition-all transform ${
                   loading 
-                    ? 'bg-indigo-400 opacity-70 cursor-not-allowed' 
+                    ? 'bg-indigo-400 opacity-70 ' 
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 shadow-lg hover:shadow-xl'
                 } transition-all duration-200`}
               >

@@ -1706,7 +1706,7 @@ export default function Visualisateur() {
 
               <br /> <br />
              Le code de la BPE et l’enregistrement du modèle pour le télécharger sur mon ordinateur ont été donnés par l’IA.
-             J’ai fait la partie réseau de neurones, l’initialisation et la fonction forward étteraient à peu près correctes, mais la back et la partie entraînement contenaient pas mal d’erreurs que l’IA a corrigées.
+             J’ai fait la partie réseau de neurones, l’initialisation et la fonction forward étaient à peu près correctes, mais la back et la partie entraînement contenaient pas mal d’erreurs que l’IA a corrigées.
              Une bonne partie du code n'est pas le réseaux mais l'enregistrement par steps du modèle, la sauvgarde ect ...
               </p>
              
