@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import json
 from flask_cors import CORS
 import pickle
 import numpy as np
@@ -238,12 +239,23 @@ def handle_translation():
     Retourne: {"translation": "phrase en anglais"}
     """
     try:
-        # Récupérer les données JSON
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({"error": "Aucune donnée reçue"}), 400
-        
+        # Récupérer les données JSON (tolérant aux mauvais Content-Type / JSON malformé)
+        data = None
+        try:
+            # silent=True évite que Werkzeug lève une 400 avant notre gestion
+            data = request.get_json(silent=True)
+        except Exception:
+            data = None
+
+        if data is None:
+            raw = request.get_data(cache=False, as_text=True)
+            if not raw:
+                return jsonify({"error": "Aucune donnée reçue"}), 400
+            try:
+                data = json.loads(raw)
+            except Exception as e:
+                return jsonify({"error": f"JSON invalide: {str(e)}"}), 400
+
         text = data.get('text', '')
         
         if not text or not text.strip():
