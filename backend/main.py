@@ -12,6 +12,15 @@ app = Flask(__name__)
 
 CORS(app, origins="*")
  
+
+# Ajout d'un hook pour s'assurer que les en-têtes CORS sont toujours présents
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    return response
+ 
 # ===========================================================
 # 1. CHARGEMENT DU MODÈLE (.pkl)
 # ===========================================================
