@@ -24,7 +24,7 @@ const genererEtapesTriBulles = (tableauInitial) => {
 
     for (let i = 0; i < arr.length; i++) {
         for (let j = 0; j < arr.length - i - 1; j++) {
-            // Étape de comparaison (jaune)
+            // Étape de comparaison avec le couleur jaune
             etapes.push({
                 array: [...arr],
                 comparing: [j, j + 1],
@@ -33,7 +33,7 @@ const genererEtapesTriBulles = (tableauInitial) => {
             });
 
             if (arr[j] > arr[j + 1]) {
-                // Étape d'échange (rouge)
+                // Étape d'échange couleur rouge 
                 let temp = arr[j];
                 arr[j] = arr[j + 1];
                 arr[j + 1] = temp;
@@ -68,14 +68,13 @@ const genererEtapesTriBulles = (tableauInitial) => {
 }
 
 export default function Visualisateur() {
-    // --- état d'origine des element 
     const [LoginOpen, setIsLoginOpen] = useState(false)
     const [SignupOpen, setSignupOpen] = useState(false)
     const [vitesse, setVitesse] = useState(1)
     const [optionVisualisation, setOptionVisualisation] = useState(true)
     const [randomGraph, setRandomGraph] = useState(false)
 
-    // --- ÉTATS POUR L'ANIMATION ET LES COULEURS 
+    // Animmation couleur
     const [currentData, setCurrentData] = useState({
         array: [...INITIAL_DATA],
         comparing: [],
@@ -95,7 +94,7 @@ export default function Visualisateur() {
         setPlay(false)
     }, [])
 
-    // --- MOTEUR D'ANIMATION ---
+    // ANIMATION 
     useEffect(() => {
         if (play && etape < allSteps.length - 1) {
             const delai = Math.max(10, 500 - (vitesse * 6.5))
@@ -109,7 +108,7 @@ export default function Visualisateur() {
         }
     }, [play, etape, allSteps, vitesse])
 
-    // --- FONCTION POUR OBTENIR LES COULEURS DES BARRES ---
+    // couleur
     const getColors = () => {
         return currentData.array.map((_, index) => {
             if (currentData.swapping.includes(index)) return '#ef4444'
@@ -119,7 +118,7 @@ export default function Visualisateur() {
         })
     }
 
-    // --- CONTROLES DU GRAPHIQUE ---
+    // RESET
     const handleReset = () => {
         setPlay(false)
         setEtape(0)
@@ -131,6 +130,7 @@ export default function Visualisateur() {
         })
     }
 
+    // Dernier etape graphique 
     const handleEnd = () => {
         setPlay(false)
         const dernierIndice = allSteps.length > 0 ? allSteps.length - 1 : 0
@@ -138,6 +138,7 @@ export default function Visualisateur() {
         setCurrentData(allSteps[dernierIndice])
     }
 
+     // Pause 
     const handlePlayPause = () => {
         if (etape >= allSteps.length - 1) {
             setEtape(0)
@@ -148,9 +149,8 @@ export default function Visualisateur() {
         }
     }
 
-    // --- FONCTIONS POUR CHANGER LE MODE DE VISUALISATION ---
+    // Changer de graphique 
     const graphiqueChoise = () => {
-        // Charger les données classiques
         const etapes = genererEtapesTriBulles(INITIAL_DATA)
         setAllSteps(etapes)
         setCurrentData(etapes[0])
@@ -170,8 +170,8 @@ export default function Visualisateur() {
         setPlay(false)
     }
 
+    // Premier graph aleatoire
     const graphiqueRandom = () => {
-        // Premier graph aleatoire
         genererGraphiqueRandom()
         setOptionVisualisation(false)
         setRandomGraph(true)
@@ -238,20 +238,18 @@ export default function Visualisateur() {
                                     </p>
                                     <button
                                         onClick={graphiqueChoise}
-                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${optionVisualisation ? 'bg-blue-600 text-white' : ''
-                                            }`}
-                                    >
+                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${optionVisualisation ? 'bg-blue-600 text-white' : ''}`}>
                                         Graphique visualisation
                                     </button>
                                     <button
                                         onClick={graphiqueRandom}
-                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${randomGraph ? 'bg-blue-600 text-white' : ''
-                                            }`}
-                                    >
+                                        className={`text-center text-[0.9rem] font-bold rounded-lg py-2 ${randomGraph ? 'bg-blue-600 text-white' : ''}`}>
                                         🎲 Random Graphique
                                     </button>
                                 </div>
 
+
+                                {/* Page pour le graphique classique  */}
                                 {optionVisualisation && (
                                     <div className="border-2 mt-[30px] pt-[15px] h-[180px] rounded-lg">
                                         <ul className="flex gap-4 text-white font-bold px-2">
@@ -281,13 +279,13 @@ export default function Visualisateur() {
                                     </div>
                                 )}
 
+                                {/* Page pour le graphique aléatoire  */}
                                 {randomGraph && (
                                     <div className="border-2 mt-[30px] pt-[15px] h-[180px] rounded-lg">
                                         <ul className="flex gap-4 text-white font-bold px-2">
                                             <button
                                                 onClick={handleReset}
-                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]"
-                                            >
+                                                className="flex text-blue-600 gap-2 hover:bg-blue-600 hover:text-white rounded-lg w-[100%]">
                                                 <i className="fi fi-ss-rewind mt-[2px]"></i>Reset
                                             </button>
                                             <button onClick={handlePlayPause}
@@ -302,18 +300,13 @@ export default function Visualisateur() {
                                         <p className="mt-4 text-[0.8rem] ml-3">Gérer la vittesse du graphique</p>
                                         <p className="text-[0.8rem] ml-3">Speed : {vitesse}</p>
                                         <div className="flex flex-col w-full">
-                                            <input
-                                                onChange={(e) => setVitesse(Number(e.target.value))}
+                                            <input onChange={(e) => setVitesse(Number(e.target.value))}
                                                 className="ml-5 mr-6 mt-2 w-[90%]"
                                                 value={vitesse}
                                                 type="range"
                                                 min="1"
-                                                max="100"
-                                            />
-                                            <button
-                                                onClick={genererGraphiqueRandom}
-                                                className="border-2 rounded-lg px-2 mt-2 w-[70%] ml-[10%] hover:opacity-60"
-                                            >
+                                                max="100"/>
+                                            <button onClick={genererGraphiqueRandom} className="border-2 rounded-lg px-2 mt-2 w-[70%] ml-[10%] hover:opacity-60">
                                                 Random
                                             </button>
                                         </div>
@@ -322,7 +315,7 @@ export default function Visualisateur() {
                             </div>
 
                             <div className="flex flex-col flex-auto border-2 rounded-lg p-2 h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
-                                {/* Légende commune aux deux modes */}
+                                {/* Légende du graphique  */}
                                 <div className="flex flex-wrap justify-center gap-4 mt-2 mb-2">
                                     <div className="flex items-center gap-2">
                                         <div className="w-4 h-4 bg-blue-500 rounded"></div>
@@ -358,12 +351,12 @@ export default function Visualisateur() {
             </div>
 
 
-            {/* Background noir semi-transparent pour Login */}
+            {/* Background noir semi-transparent pour login */}
             <div className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${LoginOpen
                     ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={closeLogin}>
                 </div>
 
-            {/* Card de login */}
+            {/* Page de login */}
             <div className={`fixed z-50 rounded-[1rem] border-[1px] border-white/30 text-white top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md
                 w-[90%] sm:w-[80%] md:w-[70%] lg:w-[50%] xl:w-[35%] 2xl:w-[30%] h-[80vh] overflow-y-auto 
                 ${ LoginOpen ? 'right-[1rem] opacity-100 pointer-events-auto' : 'right-[-40%] opacity-0 pointer-events-none'}`}
@@ -413,13 +406,15 @@ export default function Visualisateur() {
                 </div>
             </div>
 
+
+
             {/* Background pour Sign up */}
             <div
                 className={`fixed top-0 left-0 w-full h-full z-40 transition-opacity duration-500 bg-black ${SignupOpen
                         ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={closeSignup}></div>
 
-            {/* Card de Sign up */}
+            {/* Page de Sign up */}
             <div
                 className={`fixed z-50 rounded-[1rem] border-[1px] border-white/30 text-white top-[1rem] transition-all duration-500 ease-in-out flex flex-col backdrop-blur-md
                  w-[90%] sm:w-[80%] md:w-[70%] lg:w-[50%] xl:w-[35%] 2xl:w-[30%] h-[80vh] overflow-y-auto

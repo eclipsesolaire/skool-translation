@@ -23,10 +23,8 @@ export default function Accueil() {
 
           <p className="text-[1rem] md:text-[1.15rem] leading-relaxed max-w-4xl mx-auto md:mx-0 text-gray-600">
             Ce site regroupe quelques-uns de mes projets personnels en
-            <strong className="text-indigo-600"> développement</strong>,
-            en
-            <strong className="text-indigo-600"> IA</strong>{' '}
-            et en
+            <strong className="text-indigo-600"> développement</strong>, en
+            <strong className="text-indigo-600"> IA</strong>{' '} et en
             <strong className="text-indigo-600"> réseaux de neurones</strong>.
             <br />
           </p>
