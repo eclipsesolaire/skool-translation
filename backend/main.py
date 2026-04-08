@@ -239,6 +239,16 @@ def handle_translation():
     Retourne: {"translation": "phrase en anglais"}
     """
     try:
+        # Debug logs: headers + raw body (aide au diagnostic en prod)
+        try:
+            print("--- incoming request headers ---")
+            for k, v in request.headers.items():
+                print(f"{k}: {v}")
+            raw_preview = request.get_data(as_text=True)[:1000]
+            print(f"--- raw body preview (1000 chars) ---\n{raw_preview}")
+        except Exception:
+            print("(failed to dump request headers/body)")
+
         # Récupérer les données JSON (tolérant aux mauvais Content-Type / JSON malformé)
         data = None
         try:
@@ -281,6 +291,22 @@ def handle_translation():
             "error": str(e),
             "success": False
         }), 500
+
+
+@app.route('/echo', methods=['POST', 'OPTIONS'])
+def echo():
+    """Endpoint de debug: renvoie le JSON reçu"""
+    try:
+        data = request.get_json(silent=True)
+        if data is None:
+            raw = request.get_data(as_text=True)
+            try:
+                data = json.loads(raw)
+            except Exception:
+                data = {"raw": raw}
+        return jsonify({"received": data, "success": True})
+    except Exception as e:
+        return jsonify({"error": str(e), "success": False}), 500
 
 @app.route('/translate/batch', methods=['POST'])
 def handle_batch_translation():

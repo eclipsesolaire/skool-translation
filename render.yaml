@@ -5,7 +5,7 @@ services:
     runtime: python
     repo: https://github.com/VOTRE_USERNAME/skool-translation
     buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && gunicorn main:app --bind 0.0.0.0:$PORT
+    startCommand: cd backend && gunicorn main:app --bind 0.0.0.0:$PORT --preload --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
