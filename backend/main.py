@@ -205,8 +205,14 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
             logits = model.Wy(combined) + model.by
             probs = torch.softmax(logits, dim=1)
             idx = torch.argmax(probs, dim=1).item()
-            token = idx_to_word_en.get(idx, "<unk>")
             
+            if isinstance(idx_to_word_en, dict):
+                token = idx_to_word_en.get(idx, "<unk>")
+            elif isinstance(idx_to_word_en, list):
+                token = idx_to_word_en[idx] if idx < len(idx_to_word_en) else "<unk>"
+            else:
+                token = "<unk>"
+
             if token == "<eos>":
                 break
             
