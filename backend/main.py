@@ -10,32 +10,15 @@ import io
 import re
 import sys
 
-import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import pickle
-import torch
-import torch.nn as nn
-import io 
-import re
-import sys
-
 app = Flask(__name__)
 
 
-CORS(app, resources={
-    r"/*": {
-        "origins": ["https://skool-frontend-ohe0.onrender.com", "http://localhost:5173"],
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+# Allow all origins temporarily to avoid preflight/CORS issues (restrict later in production)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 @app.after_request
 def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "https://skool-frontend-ohe0.onrender.com"
+    response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return response
@@ -292,13 +275,5 @@ if __name__ == '__main__':
     print(f"📡 http://localhost:{port}")
     print(f"🔧 Modèle : PyTorch (175k phrases)")
     print("="*50)
-    app.run(host='0.0.0.0', port=port, debug=True)
-    try:
-        import threading
-        loader = threading.Thread(target=load_model, daemon=True)
-        loader.start()
-    except Exception as e:
-        print(f"⚠️ Impossible de démarrer le thread de chargement du modèle: {e}")
-
     app.run(host='0.0.0.0', port=port, debug=True)
 
