@@ -261,3 +261,5 @@ if __name__ == '__main__':
     print(f"🔧 Modèle : PyTorch (175k phrases)")
     print("="*50)
     app.run(host='0.0.0.0', port=port, debug=True)
+
+CORS(app, origins=["https://skool-frontend-ohe0.onrender.com", "http://localhost:5173"])
