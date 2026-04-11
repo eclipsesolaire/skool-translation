@@ -1,82 +1,125 @@
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
 from flask import Flask, request, jsonify
-import json
 from flask_cors import CORS
 import pickle
-import numpy as np
+import torch
+import torch.nn as nn
+import io 
 import re
-import os
 import sys
 
+
+
 app = Flask(__name__)
-
-# Configuration CORS pour permettre les requêtes du frontend
-
 CORS(app, origins="*")
- 
 
-# Ajout d'un hook pour s'assurer que les en-têtes CORS sont toujours présents
-@app.after_request
-def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
-    return response
- 
-# ===========================================================
-# 1. CHARGEMENT DU MODÈLE (.pkl)
-# ===========================================================
-params = None
-merges_fr = None
-fr_vocab = None
-inv_en_vocab = None
+# ============================================================
+# 1. DÉFINITION DU MODÈLE
+# ============================================================
+class Seq2SeqAttention(nn.Module):
+    def __init__(self, input_size, hidden1, hidden2, output_size, attn_dim=256):
+        super().__init__()
+        self.hidden1 = hidden1
+        self.hidden2 = hidden2
+        self.attn_dim = attn_dim
 
-# Obtenir le chemin absolu du fichier modèle
+        # Encodeur
+        self.Wx_enc = nn.Linear(input_size, hidden1)
+        self.Wh_enc = nn.Linear(hidden1, hidden1)
+        self.bh_enc = nn.Parameter(torch.zeros(hidden1))
+
+        # Décodeur couche 1
+        self.Wx_dec1 = nn.Linear(output_size, hidden1)
+        self.Wh_dec1 = nn.Linear(hidden1, hidden1)
+        self.bh_dec1 = nn.Parameter(torch.zeros(hidden1))
+
+        # Décodeur couche 2
+        self.Wx_dec2 = nn.Linear(hidden1, hidden2)
+        self.Wh_dec2 = nn.Linear(hidden2, hidden2)
+        self.bh_dec2 = nn.Parameter(torch.zeros(hidden2))
+
+        # Attention
+        self.Wa = nn.Linear(hidden2, attn_dim)
+        self.Ua = nn.Linear(hidden1, attn_dim)
+        self.ba = nn.Parameter(torch.zeros(attn_dim))
+        self.va = nn.Linear(attn_dim, 1)
+
+        # Sortie
+        self.Wy = nn.Linear(hidden2 + hidden1, output_size)
+        self.by = nn.Parameter(torch.zeros(output_size))
+
+    def forward(self, x, y):
+        # Non utilisé pour l'inférence
+        pass
+
+# ============================================================
+# 2. CHARGEMENT DU MODÈLE
+# ============================================================
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"🔌 Device : {device}")
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(current_dir, "mon_modele_traduction.pkl")
 
-print(f"🔍 Recherche du modèle dans: {model_path}")
-print(f"📁 Fichiers dans le dossier: {os.listdir(current_dir)}")
+if not os.path.exists(model_path):
+    print(f"❌ Fichier non trouvé : {model_path}")
+    print(f"📁 Fichiers dans le dossier : {os.listdir(current_dir)}")
+    sys.exit(1)
+
 
 try:
-    with open(model_path, "rb") as f:
-        data_loaded = pickle.load(f)
-    
-    params = data_loaded["params"]
-    merges_fr = data_loaded["merges_fr"]
-    fr_vocab = data_loaded["fr_vocab"]
-    inv_en_vocab = data_loaded["inv_en_vocab"]
-    
-    print("✅ Succès : Le cerveau du traducteur est chargé !")
-    print(f"📊 Taille du vocabulaire français: {len(fr_vocab)}")
-    print(f"📊 Taille du vocabulaire anglais: {len(inv_en_vocab)}")
-    print(f"📊 Dimensions des paramètres du modèle:")
-    for key, value in params.items():
-        if hasattr(value, 'shape'):
-            print(f"   - {key}: {value.shape}")
-    
-except FileNotFoundError:
-    print(f"❌ Erreur : 'mon_modele_traduction.pkl' est introuvable dans {model_path}")
-    print("💡 Solution: Vérifiez que le fichier est bien présent dans le dossier backend/")
-    sys.exit(1)
+    class CPU_Unpickler(pickle.Unpickler):
+        def find_class(self, module, name):
+            # Intercepte la reconstruction des tenseurs torch
+            if module == 'torch.storage' and name == '_load_from_bytes':
+                return lambda b: torch.load(io.BytesIO(b), map_location='cpu', weights_only=False)
+            return super().find_class(module, name)
+
+    with open(model_path, 'rb') as f:
+        unpickler = CPU_Unpickler(f)
+        data = unpickler.load()
+
+    print(f"🔑 Clés dans le fichier : {data.keys()}")
+
+    if "model_state" not in data:
+        print("❌ Fichier incorrect : clé 'model_state' manquante.")
+        sys.exit(1)
+
+    model_state = data["model_state"]
+    merges_fr = data["merges_fr"]
+    fr_vocab = data["fr_vocab"]
+    inv_en_vocab = data["inv_en_vocab"]
+
+    input_size = len(fr_vocab)
+    output_size = len(inv_en_vocab)
+
+    model = Seq2SeqAttention(input_size, 256, 256, output_size).to(device)
+    model.load_state_dict(model_state)
+    model.eval()
+
+    print(f"✅ Modèle chargé avec succès !")
+    print(f"📊 Vocabulaire français : {input_size} mots")
+    print(f"📊 Vocabulaire anglais : {output_size} mots")
+    print(f"🔢 Nombre de règles BPE : {len(merges_fr)}")
+
 except Exception as e:
     print(f"❌ Erreur lors du chargement : {e}")
     import traceback
     traceback.print_exc()
     sys.exit(1)
 
-# ===========================================================
-# 2. OUTILS DE TRAITEMENT DE TEXTE
-# ===========================================================
 
+# ============================================================
+# 3. FONCTIONS DE TRADUCTION
+# ============================================================
 def clean_text(text):
-    """Nettoie le texte français"""
     text = text.lower()
-    # Garde les lettres accentuées françaises
     text = re.sub(r"[^a-zàâçéèêëîïôûùüÿñœ' ]", "", text)
     return text.strip()
 
 def bpe_tokenize(word, merges):
-    """Tokenise un mot avec BPE"""
     tokens = list(word) + ["</w>"]
     for a, b in merges:
         i = 0
@@ -91,35 +134,13 @@ def bpe_tokenize(word, merges):
         tokens = new
     return tokens
 
-def to_one_hot(idx, size):
-    """Convertit un index en vecteur one-hot"""
-    vec = np.zeros((size, 1))
-    if 0 <= idx < size:
-        vec[idx] = 1
-    return vec
-
-def softmax(x):
-    """Fonction softmax stable numériquement"""
-    exp_x = np.exp(x - np.max(x))
-    return exp_x / (np.sum(exp_x) + 1e-8)
-
-# ===========================================================
-# 3. LOGIQUE DE TRADUCTION
-# ===========================================================
-
-def translate(input_sentence, params, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
-    """
-    Traduit une phrase du français vers l'anglais
-    """
-    try:
-        print(f"🔄 Traduction de: '{input_sentence}'")
-        
-        # Étape 1: Nettoyage et tokenisation
-        cleaned = clean_text(input_sentence)
+def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
+    model.eval()
+    with torch.no_grad():
+        # Nettoyage
+        cleaned = clean_text(sentence)
         if not cleaned:
             return ""
-            
-        print(f"📝 Après nettoyage: '{cleaned}'")
         
         # Tokenisation BPE
         tokens_fr = ["<sos>"]
@@ -127,306 +148,116 @@ def translate(input_sentence, params, merges_fr, fr_vocab, idx_to_word_en, max_l
             tokens_fr.extend(bpe_tokenize(w, merges_fr))
         tokens_fr.append("<eos>")
         
-        print(f"🔤 Tokens français: {tokens_fr}")
-        
         # Conversion en indices
-        indices_fr = []
-        for t in tokens_fr:
-            if t in fr_vocab:
-                indices_fr.append(fr_vocab[t])
-            else:
-                indices_fr.append(fr_vocab.get("<unk>", 0))
+        indices_fr = [fr_vocab.get(t, 0) for t in tokens_fr]
         
-        print(f"🔢 Indices: {indices_fr}")
-
-        # --- ENCODEUR ---
-        hidden_size_enc = params["Wh_enc"].shape[0]  # Devrait être 256
-        input_size = params["Wx_enc"].shape[1]
-        h_enc = np.zeros((hidden_size_enc, 1))
+        # Encodeur
+        h = torch.zeros(1, model.hidden1, device=device)
+        H_enc = []
         
-        print(f"📊 Encodeur: taille cachée={hidden_size_enc}, taille entrée={input_size}")
+        for idx in indices_fr:
+            x = torch.zeros(1, model.Wx_enc.in_features, device=device)
+            x[0, idx] = 1.0
+            h = torch.tanh(model.Wx_enc(x) + model.Wh_enc(h) + model.bh_enc)
+            H_enc.append(h)
         
-        for step, idx in enumerate(indices_fr):
-            x = to_one_hot(idx, input_size)
-            h_enc = np.tanh(
-                np.dot(params["Wx_enc"], x) + 
-                np.dot(params["Wh_enc"], h_enc) + 
-                params["bh_enc"]
-            )
-            if step < 2:  # Afficher les premiers pas seulement
-                print(f"   Pas {step}: h_enc norm = {np.linalg.norm(h_enc):.4f}")
-
-        # --- DÉCODEUR ---
-        # h1 et h2 sont tous les deux de taille 256
-        h1 = np.copy(h_enc)
-        h2 = np.zeros((params["Wh_dec2"].shape[0], 1))  # 256
-        y_input_idx = fr_vocab.get("<sos>", 1)  # Index du token <sos>
+        H_enc = torch.cat(H_enc, dim=0)
+        
+        # Décodeur
+        h1 = h.clone()
+        h2 = torch.zeros(1, model.hidden2, device=device)
+        sos_idx = fr_vocab.get("<sos>", 1)
+        y_input = torch.zeros(1, model.Wy.out_features, device=device)
+        y_input[0, sos_idx] = 1.0
+        
         translated_tokens = []
-
-        print(f"🎯 Décodeur: début de la génération")
         
-        for step in range(max_len):
-            # Couche 1 du décodeur
-            dec_input_size = params["Wx_dec1"].shape[1]
-            y_in = to_one_hot(y_input_idx, dec_input_size)
+        for _ in range(max_len):
+            # Couche 1
+            h1 = torch.tanh(model.Wx_dec1(y_input) + model.Wh_dec1(h1) + model.bh_dec1)
+            # Couche 2
+            h2 = torch.tanh(model.Wx_dec2(h1) + model.Wh_dec2(h2) + model.bh_dec2)
             
-            h1 = np.tanh(
-                np.dot(params["Wx_dec1"], y_in) + 
-                np.dot(params["Wh_dec1"], h1) + 
-                params["bh_dec1"]
-            )
+            # Attention
+            query = model.Wa(h2)
+            keys = model.Ua(H_enc)
+            energy = torch.tanh(query + keys + model.ba)
+            scores = model.va(energy)
+            attn_weights = torch.softmax(scores.T, dim=1)
+            context = attn_weights @ H_enc
             
-            # Couche 2 du décodeur
-            h2 = np.tanh(
-                np.dot(params["Wx_dec2"], h1) + 
-                np.dot(params["Wh_dec2"], h2) + 
-                params["bh_dec2"]
-            )
-            
-            # CONCATÉNATION : h1 (256) + h2 (256) = 512
-            combined = np.vstack([h1, h2])  # Shape: (512, 1)
-            
-            # Calcul des logits
-            logits = np.dot(params["Wy"], combined) + params["by"]  # Wy: (294, 512) @ (512, 1) = (294, 1)
-            
-            # Sélection du mot
-            probs = softmax(logits.flatten())
-            idx = int(np.argmax(probs))
+            # Sortie
+            combined = torch.cat((h2, context), dim=1)
+            logits = model.Wy(combined) + model.by
+            probs = torch.softmax(logits, dim=1)
+            idx = torch.argmax(probs, dim=1).item()
             token = idx_to_word_en.get(idx, "<unk>")
             
-            print(f"   Pas {step}: token='{token}', proba={probs[idx]:.4f}")
-            
-            # Condition d'arrêt
-            if token == "<eos>" or token == "":
+            if token == "<eos>":
                 break
             
             translated_tokens.append(token)
-            y_input_idx = idx
+            y_input = torch.zeros(1, model.Wy.out_features, device=device)
+            y_input[0, idx] = 1.0
         
-        # Reconstruire la phrase anglaise
-        sentence = ""
-        word = ""
+        # Reconstruction
+        words = []
+        current_word = ""
         for tok in translated_tokens:
             if tok == "</w>":
-                if word:
-                    sentence += word + " "
-                word = ""
+                if current_word:
+                    words.append(current_word)
+                current_word = ""
             else:
-                word += tok
+                current_word += tok
+        if current_word:
+            words.append(current_word)
         
-        if word:
-            sentence += word
-        
-        result = sentence.strip() if sentence.strip() else " ".join(translated_tokens)
-        print(f"✅ Traduction finale: '{result}'")
-        return result
-        
-    except Exception as e:
-        print(f"❌ Erreur dans translate(): {e}")
-        import traceback
-        traceback.print_exc()
-        return f"Erreur de traduction: {str(e)}"
+        return " ".join(words)
 
-# ===========================================================
-# 4. ROUTES FLASK POUR L'API
-# ===========================================================
-
+# ============================================================
+# 4. ROUTES FLASK
+# ============================================================
 @app.route('/translate', methods=['POST'])
 def handle_translation():
-    """
-    Endpoint principal pour la traduction
-    Attend: {"text": "phrase en français"}
-    Retourne: {"translation": "phrase en anglais"}
-    """
-    try:
-        # Debug logs: headers + raw body (aide au diagnostic en prod)
-        try:
-            print("--- incoming request headers ---")
-            for k, v in request.headers.items():
-                print(f"{k}: {v}")
-            raw_preview = request.get_data(as_text=True)[:1000]
-            print(f"--- raw body preview (1000 chars) ---\n{raw_preview}")
-        except Exception:
-            print("(failed to dump request headers/body)")
-
-        # Récupérer les données JSON (tolérant aux mauvais Content-Type / JSON malformé)
-        data = None
-        try:
-            # silent=True évite que Werkzeug lève une 400 avant notre gestion
-            data = request.get_json(silent=True)
-        except Exception:
-            data = None
-
-        if data is None:
-            raw = request.get_data(cache=False, as_text=True)
-            if not raw:
-                return jsonify({"error": "Aucune donnée reçue"}), 400
-            try:
-                data = json.loads(raw)
-            except Exception as e:
-                return jsonify({"error": f"JSON invalide: {str(e)}"}), 400
-
-        text = data.get('text', '')
-        
-        if not text or not text.strip():
-            return jsonify({"error": "Texte vide"}), 400
-        
-        print(f"📝 Requête reçue: {text}")
-        
-        # Effectuer la traduction
-        resultat = translate(text, params, merges_fr, fr_vocab, inv_en_vocab)
-        
-        print(f"✅ Réponse envoyée: {resultat}")
-        
-        return jsonify({
-            "translation": resultat,
-            "success": True
-        })
-        
-    except Exception as e:
-        print(f"❌ ERREUR dans handle_translation: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            "error": str(e),
-            "success": False
-        }), 500
-
-
-@app.route('/echo', methods=['POST', 'OPTIONS'])
-def echo():
-    """Endpoint de debug: renvoie le JSON reçu"""
-    try:
-        data = request.get_json(silent=True)
-        if data is None:
-            raw = request.get_data(as_text=True)
-            try:
-                data = json.loads(raw)
-            except Exception:
-                data = {"raw": raw}
-        return jsonify({"received": data, "success": True})
-    except Exception as e:
-        return jsonify({"error": str(e), "success": False}), 500
-
-@app.route('/translate/batch', methods=['POST'])
-def handle_batch_translation():
-    """
-    Endpoint pour traduire plusieurs phrases
-    Attend: {"texts": ["phrase1", "phrase2"]}
-    Retourne: {"translations": ["traduction1", "traduction2"]}
-    """
     try:
         data = request.get_json()
+        if not data or 'text' not in data:
+            return jsonify({"error": "Format invalide. Attendu: {'text': '...'}"}), 400
         
-        if not data or 'texts' not in data:
-            return jsonify({"error": "Format invalide. Attendu: {'texts': [...]}"}), 400
+        text = data['text'].strip()
+        if not text:
+            return jsonify({"error": "Texte vide"}), 400
         
-        texts = data['texts']
-        results = []
-        
-        for text in texts:
-            if text and text.strip():
-                translation = translate(text, params, merges_fr, fr_vocab, inv_en_vocab)
-                results.append(translation)
-            else:
-                results.append("")
-        
-        return jsonify({
-            "translations": results,
-            "success": True
-        })
-        
+        result = translate(text, model, merges_fr, fr_vocab, inv_en_vocab)
+        return jsonify({"translation": result, "success": True})
+    
     except Exception as e:
+        print(f"❌ Erreur : {e}")
         return jsonify({"error": str(e), "success": False}), 500
-
-@app.route('/', methods=['GET'])
-def home():
-    """
-    Page d'accueil de l'API
-    """
-    return jsonify({
-        "message": "API de traduction Français → Anglais",
-        "version": "1.0.0",
-        "status": "online",
-        "endpoints": {
-            "/translate": "POST - Traduire une phrase",
-            "/translate/batch": "POST - Traduire plusieurs phrases",
-            "/health": "GET - Vérifier l'état du service",
-            "/info": "GET - Informations sur le modèle"
-        }
-    })
 
 @app.route('/health', methods=['GET'])
 def health():
-    """
-    Vérification de santé du service
-    """
     return jsonify({
         "status": "healthy",
-        "model_loaded": params is not None,
-        "vocab_size_fr": len(fr_vocab) if fr_vocab else 0,
-        "vocab_size_en": len(inv_en_vocab) if inv_en_vocab else 0
+        "model_loaded": True,
+        "vocab_fr": len(fr_vocab),
+        "vocab_en": len(inv_en_vocab)
     })
 
-@app.route('/info', methods=['GET'])
-def info():
-    """
-    Informations détaillées sur le modèle
-    """
-    if params is None:
-        return jsonify({"error": "Modèle non chargé"}), 503
-    
-    info_dict = {
-        "model_type": "RNN avec attention",
-        "parameters": {},
-        "vocab_fr_size": len(fr_vocab),
-        "vocab_en_size": len(inv_en_vocab),
-        "sample_vocab_fr": dict(list(fr_vocab.items())[:10]),
-        "sample_vocab_en": dict(list(inv_en_vocab.items())[:10])
-    }
-    
-    # Ajouter les dimensions des paramètres
-    for key, value in params.items():
-        if hasattr(value, 'shape'):
-            info_dict["parameters"][key] = list(value.shape)
-        else:
-            info_dict["parameters"][key] = str(value)
-    
-    return jsonify(info_dict)
-
-# ===========================================================
-# 5. GESTION DES ERREURS
-# ===========================================================
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({"error": "Endpoint non trouvé"}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({"error": "Erreur interne du serveur"}), 500
-
-# ===========================================================
-# 6. DÉMARRAGE DE L'APPLICATION
-# ===========================================================
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        "message": "API de traduction Français → Anglais",
+        "endpoints": ["/translate (POST)", "/health (GET)"]
+    })
 
 if __name__ == '__main__':
-    # Récupérer le port depuis les variables d'environnement (Render)
     port = int(os.environ.get('PORT', 5000))
-    
-    print("=" * 50)
-    print("🚀 DÉMARRAGE DE L'API DE TRADUCTION")
-    print("=" * 50)
-    print(f"📡 Serveur démarré sur http://0.0.0.0:{port}")
-    print(f"🔧 Mode: {'Production' if os.environ.get('RENDER') else 'Développement'}")
-    print(f"💾 Modèle chargé: {'✅ Oui' if params else '❌ Non'}")
-    print("=" * 50)
-    
-    # En production (Render), on utilise debug=False
-    debug_mode = not bool(os.environ.get('RENDER'))
-    
-    app.run(
-        host='0.0.0.0',
-        port=port,
-        debug=debug_mode
-    )
+    print("="*50)
+    print("🚀 SERVEUR DE TRADUCTION")
+    print("="*50)
+    print(f"📡 http://localhost:{port}")
+    print(f"🔧 Modèle : PyTorch (175k phrases)")
+    print("="*50)
+    app.run(host='0.0.0.0', port=port, debug=True)
