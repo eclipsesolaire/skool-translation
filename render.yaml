@@ -3,22 +3,25 @@ services:
   - type: web
     name: skool-backend
     runtime: python
-    repo: https://github.com/VOTRE_USERNAME/skool-translation
-    buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && gunicorn main:app --bind 0.0.0.0:$PORT --preload --workers 2 --timeout 120
+    repo: https://github.com/eclipsesolaire/skool-translation
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --preload --workers 1 --timeout 120
+    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.10.12
       - key: FLASK_ENV
         value: production
+    autoDeploy: true
 
-  # Frontend (si votre frontend est dans le même repo)
+  # Frontend
   - type: web
     name: skool-frontend
     runtime: static
-    repo: https://github.com/VOTRE_USERNAME/skool-translation
+    repo: https://github.com/eclipsesolaire/skool-translation
     buildCommand: npm install && npm run build
-    staticPublishDir: ./dist
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        value: https://skool-backend.onrender.com
+        value: https://skool-backend-h3kb.onrender.com
