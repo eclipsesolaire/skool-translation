@@ -262,4 +262,17 @@ if __name__ == '__main__':
     print("="*50)
     app.run(host='0.0.0.0', port=port, debug=True)
 
-CORS(app, origins=["https://skool-frontend-ohe0.onrender.com", "http://localhost:5173"])
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://skool-frontend-ohe0.onrender.com", "http://localhost:5173"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "https://skool-frontend-ohe0.onrender.com"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
