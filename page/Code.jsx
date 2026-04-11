@@ -1137,7 +1137,7 @@ if __name__ == "__main__":
 `
 
 
-  const algorithmeVisu = `import React, { useState, useEffect, useCallback } from 'react';
+const algorithmeVisu = `import React, { useState, useEffect, useCallback } from 'react';
 import BarChart from '../components/BarChart';
 // import Accueil from '../page/Accueil'
 import { Link } from "react-router-dom";

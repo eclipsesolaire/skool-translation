@@ -6,7 +6,7 @@ import vscode from "./vscode.jpg";
 
 export default function Accueil() {
   return (
-    <div className="relative w-full min-h-[calc(100vh-6rem)] bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-100/10 to-purple-50 relative w-full min-h-[calc(100vh-6rem)] bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
       <div className="relative z-10 border-[1px] border-indigo-100/60 p-6 md:p-10 bg-white/80 backdrop-blur-sm text-gray-700 w-[90%] md:w-[85%] mx-auto shadow-2xl rounded-2xl min-h-[calc(100vh-8rem)] mt-[20px] mb-8">
 
         <div className="mb-8">
@@ -47,8 +47,8 @@ export default function Accueil() {
                 une opportunité d'apprendre et d'expérimenter.
               </p>
               <div className="mt-4 flex gap-2 flex-wrap">
-                {["Algorithmes", "Visualisation", "Python", "JavaScript"].map((nom, idx) => (
-                  <span key={idx} className="text-xs px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full">
+                {["Algorithmes", "Python", "JavaScript"].map((nom, idx) => (
+                  <span key={idx} className="text-xs px-2 py-1 bg-indigo-100 text-indigo-600 rounded-[0.6rem]">
                     {nom}
                   </span>
                 ))}
@@ -72,7 +72,7 @@ export default function Accueil() {
               </p>
               <div className="mt-4 flex gap-2 flex-wrap">
                 {["Deep Learning", "Numpy", "PyTorch", "Reseaux de neurones"].map((tag) => (
-                  <span key={tag} className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full">
+                  <span key={tag} className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-[0.6rem]">
                     {tag}
                   </span>
                 ))}

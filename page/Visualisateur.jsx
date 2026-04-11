@@ -199,7 +199,7 @@ export default function Visualisateur() {
 
     return (
         <>
-            <div className="relative w-full ">
+            <div className="relative w-full min-h-screen bg-gradient-to-br from-indigo-50 via-purple-100/10 to-purple-50 ">
                 <div className="p-6 bg-white/30 text-gray-600/80 shadow-lg rounded-lg mt-[20px] w-[96%] ml-[2%] sm:w-[90%] 
                 sm:ml-[5%] md:w-[85%] md:ml-[6%] lg:w-[80%] lg:ml-[10%] xl:w-[85%] xl:ml-[6%]">
                     <ul className="flex flex-wrap gap-2 text-[0.7rem] md:text-[1rem] font-semibold">

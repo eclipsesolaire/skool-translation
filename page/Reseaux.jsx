@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 // URL de ton backend Flask
 const API_URL = 'https://skool-backend-h3kb.onrender.com/translate';
+// const API_URL = "http://localhost:5000/translate";
+
 
 function TranslationApp() {
   const [input, setInput] = useState('');
@@ -63,7 +65,7 @@ function TranslationApp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-100/10 to-purple-50 py-12 px-4 sm:px-[100px] font-sans">
 
         {/* Carte principale */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-100 overflow-hidden p-8">
@@ -85,7 +87,7 @@ function TranslationApp() {
             {/* Zone d'entrée */}
             <div className="mb-6">
               <label className="block mb-2 font-semibold text-indigo-700 text-sm uppercase tracking-wide">
-                Texte à traduire en francais 
+                text en FR  
               </label>
               <textarea
                 value={input}
@@ -98,7 +100,7 @@ function TranslationApp() {
             </div>
 
             {/* Boutons */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex flex-col w-2/3 sm:flex-row gap-3 mb-6">
               <button
                 onClick={handleTranslate}
                 disabled={loading}
@@ -131,7 +133,7 @@ function TranslationApp() {
             {error && (
               <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg animate-shake">
                 <div className="flex items-center gap-2 text-red-700">
-                  <span className="text-lg">⚠️</span>
+                  <span className="text-lg">!!</span>
                   <span className="font-medium">{error}</span>
                 </div>
               </div>
@@ -140,13 +142,13 @@ function TranslationApp() {
             {/* Résultat */}
             <div>
               <label className="block mb-2 font-semibold text-indigo-700 text-sm uppercase tracking-wide">
-                🎯 Traduction
+               Traduction
               </label>
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-100 p-6 min-h-[120px]">
                 {loading ? (
                   <div className="flex flex-col items-center justify-center gap-3 py-4">
                     <div className="w-10 h-10 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                    <span className="text-indigo-600 font-medium">Le réseau de neurones analyse...</span>
+                    <span className="text-indigo-600 font-medium">Chargement ...</span>
                   </div>
                 ) : output ? (
                   <div className="space-y-4">
@@ -172,26 +174,6 @@ function TranslationApp() {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer avec stats */}
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center gap-4 px-6 py-3 bg-white/60 backdrop-blur-sm rounded-full shadow-sm border border-indigo-100">
-            <div className="flex items-center gap-2 text-indigo-600">
-              <span className="text-sm">🧠</span>
-              <span className="text-xs font-medium">RNN Encodeur-Décodeur</span>
-            </div>
-            <div className="w-px h-4 bg-indigo-200"></div>
-            <div className="flex items-center gap-2 text-indigo-600">
-              <span className="text-sm">🎯</span>
-              <span className="text-xs font-medium">Attention Mechanism</span>
-            </div>
-            <div className="w-px h-4 bg-indigo-200"></div>
-            <div className="flex items-center gap-2 text-indigo-600">
-              <span className="text-sm">⚡</span>
-              <span className="text-xs font-medium">BPE Tokenizer</span>
             </div>
           </div>
         </div>
