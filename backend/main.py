@@ -10,6 +10,18 @@ import io
 import re
 import sys
 
+import os
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import pickle
+import torch
+import torch.nn as nn
+import io 
+import re
+import sys
+
 app = Flask(__name__)
 
 
@@ -280,5 +292,13 @@ if __name__ == '__main__':
     print(f"📡 http://localhost:{port}")
     print(f"🔧 Modèle : PyTorch (175k phrases)")
     print("="*50)
+    app.run(host='0.0.0.0', port=port, debug=True)
+    try:
+        import threading
+        loader = threading.Thread(target=load_model, daemon=True)
+        loader.start()
+    except Exception as e:
+        print(f"⚠️ Impossible de démarrer le thread de chargement du modèle: {e}")
+
     app.run(host='0.0.0.0', port=port, debug=True)
 
