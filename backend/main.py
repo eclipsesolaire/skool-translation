@@ -24,6 +24,31 @@ def add_cors_headers(response):
     return response
 
 
+# Ensure OPTIONS preflight always returns CORS headers
+@app.route('/translate', methods=['OPTIONS'])
+def translate_options():
+    resp = jsonify({"status": "ok"})
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
+# Generic error handler to ensure CORS headers are present on errors
+@app.errorhandler(Exception)
+def handle_exception(e):
+    try:
+        code = getattr(e, 'code', 500)
+    except Exception:
+        code = 500
+    resp = jsonify({"error": str(e)})
+    resp.status_code = code
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
 # ============================================================
 # 1. DÉFINITION DU MODÈLE
 # ============================================================
