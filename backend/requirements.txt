@@ -1,3 +1,5 @@
-streamlit
+flask==3.1.2
+flask-cors==6.0.2
 torch==2.11.0
+gunicorn==23.0.0
 numpy==1.26.4
