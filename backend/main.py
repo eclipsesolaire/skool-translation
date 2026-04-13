@@ -1,5 +1,7 @@
 import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+os.environ['OMP_NUM_THREADS'] = '1'  # Limite les threads CPU
+os.environ['TORCH_NO_CUDA'] = '1'
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -171,21 +173,19 @@ def bpe_tokenize(word, merges):
 def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
     model.eval()
     with torch.no_grad():
-        # Nettoyage
         cleaned = clean_text(sentence)
         if not cleaned:
             return ""
         
-        # Tokenisation BPE
         tokens_fr = ["<sos>"]
         for w in cleaned.split():
             tokens_fr.extend(bpe_tokenize(w, merges_fr))
         tokens_fr.append("<eos>")
-        
-        # Conversion en indices
         indices_fr = [fr_vocab.get(t, 0) for t in tokens_fr]
         
-        # Encodeur
+        # Optimisation : utiliser directement le device du modèle
+        device = next(model.parameters()).device
+        
         h = torch.zeros(1, model.hidden1, device=device)
         H_enc = []
         
@@ -196,8 +196,6 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
             H_enc.append(h)
         
         H_enc = torch.cat(H_enc, dim=0)
-        
-        # Décodeur
         h1 = h.clone()
         h2 = torch.zeros(1, model.hidden2, device=device)
         sos_idx = fr_vocab.get("<sos>", 1)
@@ -207,40 +205,28 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
         translated_tokens = []
         
         for _ in range(max_len):
-            # Couche 1
             h1 = torch.tanh(model.Wx_dec1(y_input) + model.Wh_dec1(h1) + model.bh_dec1)
-            # Couche 2
             h2 = torch.tanh(model.Wx_dec2(h1) + model.Wh_dec2(h2) + model.bh_dec2)
-            
-            # Attention
             query = model.Wa(h2)
             keys = model.Ua(H_enc)
             energy = torch.tanh(query + keys + model.ba)
             scores = model.va(energy)
             attn_weights = torch.softmax(scores.T, dim=1)
             context = attn_weights @ H_enc
-            
-            # Sortie
             combined = torch.cat((h2, context), dim=1)
             logits = model.Wy(combined) + model.by
             probs = torch.softmax(logits, dim=1)
             idx = torch.argmax(probs, dim=1).item()
             
-            if isinstance(idx_to_word_en, dict):
-                token = idx_to_word_en.get(idx, "<unk>")
-            elif isinstance(idx_to_word_en, list):
-                token = idx_to_word_en[idx] if idx < len(idx_to_word_en) else "<unk>"
-            else:
-                token = "<unk>"
-
+            token = idx_to_word_en.get(idx, "<unk>") if isinstance(idx_to_word_en, dict) else idx_to_word_en[idx] if idx < len(idx_to_word_en) else "<unk>"
+            
             if token == "<eos>":
                 break
             
             translated_tokens.append(token)
-            y_input = torch.zeros(1, model.Wy.out_features, device=device)
+            y_input.zero_()
             y_input[0, idx] = 1.0
         
-        # Reconstruction
         words = []
         current_word = ""
         for tok in translated_tokens:
@@ -261,19 +247,25 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
 @app.route('/translate', methods=['POST'])
 def handle_translation():
     try:
+        print("📥 Requête reçue")
         data = request.get_json()
         if not data or 'text' not in data:
             return jsonify({"error": "Format invalide. Attendu: {'text': '...'}"}), 400
         
         text = data['text'].strip()
+        print(f"📝 Texte à traduire : {text[:50]}...")
         if not text:
             return jsonify({"error": "Texte vide"}), 400
         
+        print("🔄 Traduction en cours...")
         result = translate(text, model, merges_fr, fr_vocab, inv_en_vocab)
+        print(f"✅ Traduction terminée : {result[:50]}...")
         return jsonify({"translation": result, "success": True})
     
     except Exception as e:
         print(f"❌ Erreur : {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e), "success": False}), 500
 
 @app.route('/health', methods=['GET'])
