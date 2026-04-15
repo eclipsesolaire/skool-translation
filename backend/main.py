@@ -247,26 +247,24 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
 @app.route('/translate', methods=['POST'])
 def handle_translation():
     try:
-        print("📥 Requête reçue")
         data = request.get_json()
         if not data or 'text' not in data:
             return jsonify({"error": "Format invalide. Attendu: {'text': '...'}"}), 400
         
         text = data['text'].strip()
-        print(f"📝 Texte à traduire : {text[:50]}...")
         if not text:
             return jsonify({"error": "Texte vide"}), 400
         
-        print("🔄 Traduction en cours...")
+        # Appel à translate avec gestion d'erreur interne
         result = translate(text, model, merges_fr, fr_vocab, inv_en_vocab)
-        print(f"✅ Traduction terminée : {result[:50]}...")
         return jsonify({"translation": result, "success": True})
     
     except Exception as e:
-        print(f"❌ Erreur : {e}")
         import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e), "success": False}), 500
+        error_details = traceback.format_exc()
+        print(error_details)  # Cela apparaîtra dans les logs
+        return jsonify({"error": str(e), "trace": error_details, "success": False}), 500
+
 
 @app.route('/health', methods=['GET'])
 def health():
