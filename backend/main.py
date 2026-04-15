@@ -244,8 +244,21 @@ def translate(sentence, model, merges_fr, fr_vocab, idx_to_word_en, max_len=20):
 # ============================================================
 # 4. ROUTES FLASK
 # ===========================================================
-@app.route('/translate', methods=['POST'])
+# ============================================================
+# 4. ROUTES FLASK (CORRIGÉES)
+# ============================================================
+
+@app.route('/translate', methods=['POST', 'OPTIONS'])
 def handle_translation():
+    # Réponse pour la requête OPTIONS (pré-vol CORS)
+    if request.method == 'OPTIONS':
+        response = jsonify({"status": "ok"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response
+    
+    # Traitement de la requête POST
     try:
         data = request.get_json()
         if not data or 'text' not in data:
@@ -255,16 +268,15 @@ def handle_translation():
         if not text:
             return jsonify({"error": "Texte vide"}), 400
         
-        # Appel à translate avec gestion d'erreur interne
         result = translate(text, model, merges_fr, fr_vocab, inv_en_vocab)
         return jsonify({"translation": result, "success": True})
     
     except Exception as e:
+        print(f"❌ Erreur : {e}")
         import traceback
-        error_details = traceback.format_exc()
-        print(error_details)  # Cela apparaîtra dans les logs
-        return jsonify({"error": str(e), "trace": error_details, "success": False}), 500
-
+        traceback.print_exc()
+        return jsonify({"error": str(e), "success": False}), 500
+    
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -275,12 +287,14 @@ def health():
         "vocab_en": len(inv_en_vocab)
     })
 
+
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({
         "message": "API de traduction Français → Anglais",
         "endpoints": ["/translate (POST)", "/health (GET)"]
     })
+
 
 if __name__ == '__main__':
     # ⚠️ CRUCIAL : Utilisez int() et la variable PORT de Render
