@@ -1699,7 +1699,7 @@ export default function Visualisateur() {
              Pour les fonctions d'activation, j'ai utilisé la fonction tanh, GeLU, softmax
              <br />
              Pour l'optimisation, j'ai utilisé la descente de gradient de type mini-batch avec l'optimiseur Adam et j'ai choisi la 
-             fonction de perte MSE pour mesurer l'erreur entre les prédictions et les cibles.
+             fonction de perte compute loss pour mesurer l'erreur entre les prédictions et les cibles.
              <br /> <br />
               Comme l'entraînement du réseau était excessivement long, j'ai créé un modèle PyTorch. Je ne maîtrise pas encore cette librairie j'ai simplement copié-collé mon code et demandé à une IA de le convertir en PyTorch. Comme le réseau sur PyTorch ne converge pas, le modèle ne sera disponible que le 10 avril. Le réseau 
               actuel n'est entraîné que sur 1 000 phrases, il n'est donc pas optimal il sert uniquement à initialiser la page réseau.
